@@ -27,3 +27,10 @@
 使用 URL 前缀资源 `https://claude-network-check.github.io/`，HTML 文件验证。保留 `site/googlec557c1b9f9d8a641.html`，否则后续复验可能失败；这是公开验证文件，不是账号密码或 API 密钥。
 
 站点地图地址为 `https://claude-network-check.github.io/sitemap.xml`。提交成功只表示 Google 接受请求，不表示已经收录。后续在 Search Console 查看网页索引、搜索词、展示次数和点击率，再据实际需求改进内容；不自动反复请求收录。
+
+## 2026-10-17 提交记录
+
+- Google Search Console 的 HTML 文件所有权验证已通过。
+- sitemap.xml 已提交，包含四个主要页面；首次读取暂显示“无法读取此站点地图”。线上文件返回 HTTP 200、application/xml，XML 可正常解析，robots.txt 允许抓取且声明了正确地址。Google 的后续读取状态仍需观察。
+- 首页已通过请求索引流程，Google 确认“已将网址添加到优先抓取队列中”；这不代表已收录或获得排名。
+- 39 项单元测试及构建后的 SEO 检查通过。正式站点的静态 FAQ、结构化数据、移动布局、教程导航和真实 404 响应已核对。
