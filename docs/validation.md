@@ -83,3 +83,11 @@ WebRTC、IPv6、DNS、ECS 与时区、语言、Intl、UTC 偏移直接可见。�
 配置模板使用保留示例地址在临时目录通过 Mihomo `-t` 语法检查；未启动代理或修改本机配置。Skill 保留显式调用、备份、脱敏与实际路径验证要求。
 
 构建新增各页独立标题与描述、canonical、Open Graph、Twitter 分享预览、JSON-LD、robots.txt 和 sitemap.xml；验收记录页设为 noindex。分享图为通用图形，没有真实检测数据。构建支持通过 SITE_URL 指定项目子路径。
+
+## GitHub Pages 线上验收
+
+正式地址：https://claude-network-check.github.io/ 。部署源为 GitHub Actions，HTTPS 强制启用。首页、教程、调研、对照、验收页、分享图片、robots.txt、sitemap.xml、Skill ZIP 与 YAML 模板均返回 HTTP 200。
+
+在正式域名通过 Ego Lite 完成一次真实检测：22/22 项结束，其中 20 项取得观测、IPv6 与 WebRTC 两项受限。两个 Claude 诊断端点、IP 归属、DNS 与出口对照可读取；仅表示此次浏览器样本，不是其他用户或账号的可用性保证。没有保存真实地址或原始结果。初始页面没有跨站检测请求。
+
+部署工作流升级到已核对的官方 Node 24 Actions 并固定提交 SHA，运行环境固定 Ubuntu 24.04，避免默认镜像自动升级影响。测试使用 Node 22，无需安装依赖。

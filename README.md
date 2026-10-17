@@ -1,6 +1,6 @@
 # Claude Network Check
 
-一个可部署到 GitHub Pages 的浏览器网络检测页，附 5 步图文教程和 Agent Skill。独立项目，与 Anthropic / Claude / IPPure 无关联。
+一个已部署到 GitHub Pages 的浏览器网络检测页，附 5 步图文教程和 Agent Skill。独立项目，与 Anthropic / Claude / IPPure 无关联。
 
 - 先给结论，再展示 Claude 出口、地址暴露、地区特征和修复建议；每项可展开证据。
 - 22 项检测：10 项网络观测、12 项浏览器与设备检查。
@@ -8,6 +8,8 @@
 - 本地读取时区、语言、字体线索；透明的实验性参考值，不是官方风险分数。
 - 点击后才联网；无 API 密钥、无遥测、无持久化，报告默认脱敏。
 - 免费外部服务可限流或失败；未知始终显示未知，不承诺无泄露或账号安全。
+
+**在线检测：[claude-network-check.github.io](https://claude-network-check.github.io/)** · [配置教程](https://claude-network-check.github.io/guide.html) · [下载 Skill](https://claude-network-check.github.io/downloads/claude-network-setup.zip)
 
 ![检测页预览，尚未开始检测](docs/images/03-preview.png)
 
