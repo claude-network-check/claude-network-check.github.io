@@ -1,0 +1,65 @@
+# 示例模板：填写全部 REPLACE_WITH_* 后再部署。
+# server 使用实际数字 IP，避免代理与 DNS 之间形成启动循环。
+# 端口仅为示例；按服务商资料修改协议、端口和 TLS 参数。
+mixed-port: 7890
+allow-lan: false
+mode: rule
+log-level: info
+ipv6: false
+
+tun:
+  enable: true
+  stack: gvisor
+  auto-route: true
+  auto-detect-interface: true
+  dns-hijack:
+    - any:53
+
+proxies:
+  - name: RELAY
+    type: anytls
+    server: REPLACE_WITH_RELAY_IP
+    port: 443
+    password: REPLACE_WITH_RELAY_PASSWORD
+    sni: REPLACE_WITH_TLS_SERVER_NAME
+
+  - name: ISP-EXIT
+    type: socks5
+    server: REPLACE_WITH_ISP_IP
+    port: 443
+    username: REPLACE_WITH_ISP_USERNAME
+    password: REPLACE_WITH_ISP_PASSWORD
+    dialer-proxy: RELAY
+
+dns:
+  enable: true
+  listen: 127.0.0.1:53
+  ipv6: false
+  enhanced-mode: redir-host
+  respect-rules: false
+  # IP 形式的 DoH 经固定出口访问；代理 server 必须使用数字 IP。
+  default-nameserver:
+    - https://1.1.1.1/dns-query#ISP-EXIT
+    - https://8.8.8.8/dns-query#ISP-EXIT
+  nameserver:
+    - https://1.1.1.1/dns-query#ISP-EXIT
+    - https://8.8.8.8/dns-query#ISP-EXIT
+  fallback: []
+
+rules:
+  # 可选示例：替换成明确希望直连的域名再取消注释。
+  # - DOMAIN-SUFFIX,example.com,DIRECT
+  # - DOMAIN-KEYWORD,example,DIRECT
+
+  # 通用回环和局域网范围，不属于任何组织的网络配置。
+  - DOMAIN-SUFFIX,localhost,DIRECT
+  - DOMAIN-SUFFIX,local,DIRECT
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  - IP-CIDR,169.254.0.0/16,DIRECT,no-resolve
+  - IP-CIDR6,::1/128,DIRECT,no-resolve
+  - IP-CIDR6,fc00::/7,DIRECT,no-resolve
+  - IP-CIDR6,fe80::/10,DIRECT,no-resolve
+  - MATCH,ISP-EXIT
