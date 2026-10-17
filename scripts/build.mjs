@@ -3,7 +3,7 @@ import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {makeZip} from './zip.mjs';
 import {guidePage} from './guide.mjs';
-import {pageMetadata,siteBase,seoHead,sitemap} from './seo.mjs';
+import {pageMetadata,siteBase,seoHead,sitemap,documentNavigation,notFoundPage} from './seo.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const dist=path.join(root,'dist');
 const base=siteBase(process.env.SITE_URL);
@@ -38,7 +38,7 @@ function markdown(source){
 for(const [file,title,name] of [['guide.zh-CN.md','5 步配置教程','guide'],['research.zh-CN.md','免费 API 与纯前端调研','research'],['validation.md','测试记录','validation'],['coverage.zh-CN.md','IPPure 功能对照','coverage']]){
   const source=await readFile(path.join(root,'docs',file),'utf8');
   const content=name==='guide'?guidePage(source,markdown):`<main class="document" id="main">${markdown(source)}</main>`;
-  await writeFile(path.join(dist,`${name}.html`),`<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>${title} · Network Check</title><link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./theme.css"><link rel="stylesheet" href="./guide.css"><script type="module" src="./docs.js"></script><link rel="icon" href="./favicon.svg"></head><body><a class="skip" href="#main">跳到主要内容</a><header class="top"><a class="brand" href="./index.html"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg></span>Network Check</a><nav aria-label="主导航"><a href="./index.html">环境检测</a><a href="./guide.html" ${name==='guide'?'aria-current="page"':''}>配置教程</a><a href="./research.html" ${name==='research'?'aria-current="page"':''}>检测方法</a></nav><a class="skill-link" href="./downloads/claude-network-setup.zip">下载 Skill ↗</a></header>${content}<footer><span>Network Check / 独立环境诊断工具</span><span class="footer-links"><a href="./index.html">环境检测</a><a href="./guide.html">配置教程</a><a href="./research.html">检测方法</a></span></footer></body></html>`);
+  await writeFile(path.join(dist,`${name}.html`),`<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>${title} · Network Check</title><link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./theme.css"><link rel="stylesheet" href="./guide.css"><script type="module" src="./docs.js"></script><link rel="icon" href="./favicon.svg"></head><body><a class="skip" href="#main">跳到主要内容</a><header class="top"><a class="brand" href="./"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg></span>Network Check</a><nav aria-label="主导航"><a href="./">环境检测</a><a href="./guide.html" ${name==='guide'?'aria-current="page"':''}>配置教程</a><a href="./research.html" ${name==='research'?'aria-current="page"':''}>检测方法</a></nav><a class="skill-link" href="./downloads/claude-network-setup.zip">下载 Skill ↗</a></header>${content}<footer><span>Network Check / 独立环境诊断工具</span><span class="footer-links"><a href="./">环境检测</a><a href="./guide.html">配置教程</a><a href="./research.html">检测方法</a></span></footer></body></html>`);
 }
 const files=[];
 async function walk(dir,prefix){for(const entry of (await readdir(dir,{withFileTypes:true})).sort((a,b)=>a.name.localeCompare(b.name))){const name=`${prefix}/${entry.name}`;if(entry.isDirectory())await walk(path.join(dir,entry.name),name);else files.push({name,content:await readFile(path.join(dir,entry.name))});}}
@@ -48,9 +48,11 @@ await writeFile(path.join(dist,'downloads','claude-network-setup.zip'),makeZip(f
 for(const [file,meta] of Object.entries(pageMetadata)){
   const target=path.join(dist,file);let html=await readFile(target,'utf8');
   html=html.replace(/<title>[\s\S]*?<\/title>/,'').replace(/<meta name="description"[^>]*>/g,'').replace('</head>',`${seoHead(meta,base)}</head>`);
+  if(meta.path){const {breadcrumb,related}=documentNavigation(meta);html=html.replace(/(<main[^>]*>)/,`$1${breadcrumb}`).replace('</main>',`${related}</main>`);}
   html=html.replace('<span class="footer-links">','<span class="footer-links"><a href="https://github.com/claude-network-check/claude-network-check.github.io">GitHub ↗</a>');
   await writeFile(target,html);
 }
+await writeFile(path.join(dist,'404.html'),notFoundPage(base));
 await writeFile(path.join(dist,'robots.txt'),`User-agent: *\nAllow: /\nSitemap: ${base}sitemap.xml\n`);
 await writeFile(path.join(dist,'sitemap.xml'),sitemap(base));
 console.log('Built static site, SEO metadata, documents and Skill ZIP into dist/');

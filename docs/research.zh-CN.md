@@ -59,6 +59,6 @@ DNS 单次只看到此次请求的递归解析器，不是整台电脑 DNS 清�
 
 ## GitHub Pages 部署边界
 
-[GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages) 只托管静态资源。仓库内准备了手动触发的 Actions 工作流，实际发布由仓库拥有者决定。没有创建远端或执行部署。HTTPS 与 localhost 可用于浏览器检测；不要直接双击 file:// 文件运行。
+[GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages) 只托管静态资源。本项目已使用 Actions 发布；主分支更新会自动构建部署，也支持手动触发。HTTPS 与 localhost 可用于浏览器检测；不要直接双击 file:// 文件运行。
 
 新增 Emoji 实际像素观测、三个 DNS 样本和更多环境检查，详见[功能对照](coverage.zh-CN.md)。它们不改变四项参考指数。

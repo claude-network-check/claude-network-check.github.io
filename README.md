@@ -37,6 +37,7 @@ npm run dev
 - [实现与浏览器测试记录](docs/validation.md)
 - [Skill](skills/claude-network-setup/SKILL.md) / [Mihomo 模板](skills/claude-network-setup/assets/mihomo.template.yaml)
 - [推文草稿](docs/thread.zh-CN.md)
+- [SEO 维护说明](docs/seo.md)
 
 构建生成 dist/，包含网页、可阅读的教程/调研页、原始文档、Skill 和下载 ZIP。Skill 解压后，将 claude-network-setup 文件夹放入你的 Agent 支持的 skills 目录，显式调用 `$claude-network-setup`。技能不会随网页运行。
 

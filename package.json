@@ -2,5 +2,5 @@
   "name": "claude-network-check", "version": "0.6.0", "private": true,
   "type": "module", "description": "A static, transparent browser network diagnostic with a setup guide and agent skill.",
   "engines": {"node": ">=22"},
-  "scripts": {"dev": "node scripts/dev.mjs", "build": "node scripts/build.mjs", "test": "node --test", "check": "npm test && npm run build"}
+  "scripts": {"dev": "node scripts/dev.mjs", "build": "node scripts/build.mjs", "test": "node --test", "check:site": "node scripts/check-site.mjs", "check": "npm test && npm run build && npm run check:site"}
 }
