@@ -6,7 +6,7 @@
 
 | 页面 | 搜索需求 | 内容 |
 | --- | --- | --- |
-| 首页 | Claude 环境检测、DNS / WebRTC 检测 | 检测入口、22 项能力说明、常见问题 |
+| 首页 | Claude 环境检测、DNS / WebRTC 检测 | 检测入口、出口 / DNS / WebRTC / 中文环境四类检测、常见问题 |
 | guide.html | Claude 网络配置、Mihomo TUN 规则 | 五步教程、配置下载、验证入口 |
 | research.html | 网络检测原理、免费 IP / DNS API | 数据来源、配额和技术边界 |
 | coverage.html | 检测范围、IPPure 功能对照 | 能力与限制逐项说明 |

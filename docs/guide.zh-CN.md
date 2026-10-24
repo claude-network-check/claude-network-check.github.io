@@ -30,7 +30,7 @@ rules:
 
 模板通过 `#ISP-EXIT` 让公共 DoH 查询经过固定出口。代理端点需填写数字 IP，避免代理和 DNS 相互依赖。若把系统 DNS 改为 `127.0.0.1`，先确认 Clash DNS 正常监听，并保持 Clash 运行。
 
-> **验证要点**：用检测页查看 DNS 样本与 ECS；解析器地区只是线索，不能单凭国家不同就判定泄露。
+> **验证要点**：检测页的「DNS 泄露」里不应出现中国大陆（CN）解析器；境外解析器分布在多个国家是正常的。
 
 ## 4. 核对浏览器的环境信号
 
@@ -46,10 +46,10 @@ defaults write com.google.Chrome WebRtcIPHandling -string disable_non_proxied_ud
 
 ## 5. 回到检测页，逐项验证
 
-在实际使用的 Profile 打开[本项目检测页](../index.html)，也可使用 [IPPure](https://ippure.com/claude) 交叉核对。先核对出口、DNS 和 WebRTC，再检查环境字段。每次只改一类设置，重测并记录。
+在实际使用的 Profile 打开[本项目检测页](../index.html)，也可使用 [IPPure](https://ippure.com/claude) 交叉核对。先看顶部结论，按「高风险 → 注意」的顺序处理：出口地区、DNS、WebRTC，再到时区和语言。每次只改一类设置，重测并记录。
 
 ![排查顺序](images/02-checklist.png)
 
-不同检测工具的分数不能直接比较；约 30 分不是官方通过线。IP 信誉等问题未必能靠本地设置解决。
+本页的中文环境评分与 IPPure 算法一致，可以互相对照；但分数是估计，30 分不是官方通过线。IP 信誉等问题未必能靠本地设置解决。
 
 需要 Agent 协助，可安装随附 Skill，调用 `$claude-network-setup`。它会检查配置来源、备份、修改并验证；完整参数和排查细节都留在 Skill 中。

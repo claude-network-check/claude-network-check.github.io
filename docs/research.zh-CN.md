@@ -1,64 +1,71 @@
-# 免费检测方案调研
+# 检测方法与免费数据源
 
-调研日期：2026-10-17。结论：GitHub Pages 可以承载完整前端，免费外部服务负责 IP 回显、归属和 DNS 权威观测。**不需要自建后端，不等于不依赖后端。** 无法免费、可靠地复刻 Claude 内部风控或认证住宅 IP 质量。
+更新日期：2026-10-24。整站是 GitHub Pages 上的纯静态页面，所有检测都在浏览器内完成，借助免费、无密钥、允许跨域的外部服务取得网页本身拿不到的数据。**不需要自建后端，不等于不依赖外部服务。**
 
-## 本项目采用
+## 每一项怎么测
 
-| 检测 | 实现与官方资料 | 免费边界 | 本项目处理 |
+| 检测 | 方法 | 数据源 | 判定 |
 | --- | --- | --- | --- |
-| IPv4 / IPv6 | [ipify](https://www.ipify.org/) + [ident.me](https://api.ident.me/) | 免费、无密钥；ident.me 支持 4./6. 协议限定入口 | ipify 失败后使用 ident.me；严格校验协议族 |
-| 国家归属 | [country.is](https://country.is/) | 官方称无配额，每 IP 每秒 10 请求基础设施限流；允许商用；浏览器 CORS 已实测 | 独立取得国家，避免 ASN 接口失效连带丢失地区 |
-| 城市 / ASN / ISP | [ipapi.is 匿名接口](https://ipapi.is/developers.html)，备用 [ipwho.is](https://ipwhois.io/documentation) | ipapi.is 无密钥基础查询 30 次/IP/UTC 日，无安全情报；ipwho.is 共享免费额度可能限流 | 匿名元数据失败再切备用，结果只在内存缓存 5 分钟；每轮最多 8 个去重地址，每地址最多 3 个服务 |
-| DNS / ECS | [Upset EDNS](https://upset.dev/edns) | 免费、无密钥、明确支持 CORS；可能限流，未公布具体额度或 SLA | 跟随随机主机名重定向，解析 dns.ip 和可选 edns.ip |
-| WebRTC | [Cloudflare STUN](https://developers.cloudflare.com/realtime/turn/faq/) + [ICE API](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/icecandidate_event) | STUN 官方免费不限量；TURN 是另一项服务 | 数据通道触发 ICE；7 秒上限，结束关闭连接，不请求摄像头 |
-| 目标域名出口 | claude.ai / claude.com 的 /cdn-cgi/trace | 诊断端点，不是承诺长期开放的开发者 API | 尽力读取 ip；失败保留未知，不据此判账号状态 |
-| 语言、时区 | [navigator.languages](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/languages)、[Intl](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/resolvedOptions) | 纯前端，无调用额度 | 仅在点击后读取，不上传 |
-| 字体、平台线索 | Canvas 测量宽度 + 浏览器平台字段 | 纯前端；只能推断，受隐私保护、字体回退影响 | 供查看，不计分；不把平台推断称为 Emoji 像素检测 |
+| Claude 出口 IP | 请求 `claude.ai` 和 `claude.com` 的 `/cdn-cgi/trace`，读 `ip`、`loc`、`colo`，记录往返耗时 | Claude 前端的 Cloudflare | 两个域名分别显示 |
+| 支持地区 | 优先用 trace 里 Cloudflare 自己给出的 `loc` 国家代码；拿不到时才用 IP 库 | [Anthropic 支持地区政策](https://www.anthropic.com/supported-countries) | 不在名单内（含 CN、HK、MO、RU 等）为高风险 |
+| IP 归属 | 国家、城市、ASN、运营商、所在时区 | [ipinfo.io](https://ipinfo.io/)，备用 [ipwho.is](https://ipwhois.io/)、[country.is](https://country.is/) | 每轮最多 10 个地址，响应 IP 必须与查询一致 |
+| IP 类型 | 机房 / 住宅 / 移动，VPN、代理、Tor 标记 | [ipquery.io](https://ipquery.io/) | 有匿名标记为“注意”，机房 IP 只作提示 |
+| 普通网页出口 | IPv4 / IPv6 分别回显 | [icanhazip](https://icanhazip.com/)，备用 [ipify](https://www.ipify.org/)、[ident.me](https://api.ident.me/) | 与 Claude 出口不一致为“注意” |
+| DNS 泄露 | 16 次随机子域名查询，由权威 DNS 记下是哪个递归解析器来查 | Surfshark ×5、Fastly ×5、BrowserLeaks IPv4 ×3、IPv6 ×3 | 出现中国大陆解析器即泄露 |
+| WebRTC 泄露 | 一次 ICE 收集，同时连接 5 个 STUN 服务器，解析公网候选及其归属 | B 站、小米、芒果 TV、Cloudflare、Google STUN | 公网候选在中国大陆为泄露；不同于所有出口为“注意” |
+| 中文环境特征 | 六项浏览器信号加权，0–100 分 | 浏览器本地 API | 0–30 低、31–60 中、61–100 高 |
+| 时区一致性 | 浏览器 IANA 时区与出口 IP 所在时区对照 | 本地 + IP 归属 | 当前偏移不同为“注意” |
 
-DNS 单次只看到此次请求的递归解析器，不是整台电脑 DNS 清单。Anycast 归属可能与实际服务器位置不同。ECS 可能关联代理、解析器或客户端子网，不能直接断言是真实家庭 IP。公网 ICE 与 HTTP 不同，可能源自 IPv6、多出口或分流；没有候选也不能证明安全。
+## 为什么用国内 STUN 服务器
 
-## 其他候选与取舍
+很多分流规则把国内域名设为 DIRECT。如果只连 Cloudflare 或 Google 的 STUN，UDP 会和其他境外流量一起走代理，看起来“没有泄露”；但浏览器访问国内网站的 WebRTC 流量仍可能直连，暴露真实宽带地址。同时连接 B 站、小米、芒果 TV 的 STUN 才能发现这种情况。这也是此前版本与 IPPure 结果不一致的主要原因之一。
 
-| 服务 / 方法 | 调研结果 | 为什么未作默认 |
+## 为什么 DNS 要查 16 次
+
+一次查询只能看到一个递归解析器。系统可能配置了多个上游，代理客户端也可能在 fake-ip 与真实解析之间切换。四个服务、16 次随机子域名能把整组解析器尽量采全，任何一个落在中国大陆就说明有 DNS 请求没走代理。旧版只查 3 次 Upset EDNS，样本太少，也会把正常的 ECS 子网误报为问题，已移除。
+
+## 中文环境评分
+
+六项信号、权重和部分得分规则与 [IPPure Claude 页](https://ippure.com/claude)一致，同一个浏览器两边分数相同：
+
+| 信号 | 权重 | 得分规则 |
 | --- | --- | --- |
-| [dnsleak.dev](https://dnsleak.dev/api) | 正式免费 API，无密钥，允许第三方使用；[接口说明](https://dnsleak.dev/llms.txt) 完整 | 本次 /api/new 响应未提供跨域许可；不能仅凭服务器请求成功认定 Pages 可用 |
-| ipapi.is 完整安全情报 | 密钥方案提供更多字段；匿名响应仅有基础归属 | 已采用匿名基础查询；完整信誉及住宅判定仍未接入，不公开密钥 |
-| [ipapi.co](https://ipapi.co/free/) | 当前免费入口为限时试用 | 不能当作长期免费 API |
-| [IPinfo Lite](https://ipinfo.io/pricing) | 免费 Lite 的基础国家和 ASN 产品 | 需账户 token；默认方案避免公开账户凭据 |
-| [IPPure MyIP API](https://ippure.com/MyIP-Info-API.html) | 有公开文档，无密钥示例 | 未确认稳定跨域、额度及长期使用边界，本次访问失败；不复用网页内部接口 |
-| [whatsmyip.fyi](https://whatsmyip.fyi/api) | 部分 CORS 接口已提供 | DNS leak 端点文档标为计划中，并非已交付 |
-| [bash.ws](https://bash.ws/dnsleak) / [CLI](https://github.com/macvk/dnsleaktest) | 有开源检测客户端 | 客户端开源许可证不等于服务调用授权；CORS/服务条款尚未验证 |
-| [addr.tools](https://github.com/brianshea2/addr.tools) | 开源 DNS 检测参考 | 需要权威 DNS 等服务端基础设施，Pages 单独不够 |
-| [MyIP](https://github.com/jason5ng32/MyIP) | 开源 IP 工具箱 | 全部能力涉及服务端或外部服务；可作扩展参考 |
-| [DNSLeakTester](https://github.com/ygbull/DNSLeakTester) | 前端配合 Workers/KV 与外部检测服务 | 免费层不等于纯 Pages，无需为当前基础版增加部署环节 |
-| [ip-leak-check](https://github.com/ObsisMc/ip-leak-check) | 静态诊断参考，另有可选函数处理跨域 | 只作方案参考，未复制代码 |
+| 系统时区 | 30 | Asia/Shanghai、Asia/Urumqi 等 1；Asia/Hong_Kong、Asia/Macau、Asia/Taipei 0.6 |
+| 浏览器语言 | 24 | 首选简体中文 1；首选繁体 0.5；列表含简体 0.7；含其他中文 0.4 |
+| 中文字体 | 20 | 探测到简体字体 0.75 + 0.08 × 数量（封顶 1）；只有繁体字体 0.5 |
+| Intl 区域设置 | 10 | 简体中文 1；其他中文 0.5 |
+| UTC 偏移 | 8 | UTC+8 为 0.7 |
+| Emoji / 系统风格 | 8 | 由 UA 推断：Apple 0.25、Google 0.35、Microsoft 0.4、Linux 0.5 |
 
-以上额度和条款会变化。公开推广前应重新检查供应商文档。免费接口没有整体可用性保证，不设置自动轮询，不反复重试已限流服务；仅切换公开的备用接口。也不使用公共 CORS 代理，避免检测到代理服务器的出口。
+单项得分 ≥ 0.25 计为命中。只有系统时区与公开逆向分析中 Claude Code 读取的字段一一对应；其余五项是相关特征。macOS 和 Windows 都自带中文字体，所以“中文字体”几乎总会命中，页面会标注“均为系统自带”。**分数是估计，不是 Claude 的判定，低分不代表账号安全。**
 
-## IPPure 的分数与本项目的区别
+## 结论怎么得出
 
-本次查看 [IPPure Claude 页面](https://ippure.com/claude) 的公开前端资源，观察到六类本地信号：时区 30、语言 24、字体推断 20、Intl 地区 10、UTC 偏移 8、平台相关“Emoji”线索 8。DNS、WebRTC、出口 IP 没有参与这组前端分数。页面自己的说明也不将它等同于 Claude 官方判断。网站可能更新，不能把某次实现视为永久公式；更没有证据证明 Claude 使用完全相同的信号与权重。
+- **高风险**：出口在不支持地区；DNS 出现中国大陆解析器；WebRTC 暴露中国大陆 IP；系统时区为中国时区；中文环境评分高；IPv6 出口在不支持地区。
+- **注意**：claude.ai、claude.com 与普通网页出口不一致；WebRTC 公网地址不同于出口；浏览器时区与出口 IP 时区不一致；出口 IP 有 VPN / 代理 / Tor 标记；中文环境评分中等。
+- **提示**：出口是机房 IP；浏览器处于自动化控制。
 
-本项目独立实现，不复制其源码或 UI。参考值只有四项：大陆时区标识 40、首选中文 30、Intl 中文地区 20、UTC+8 偏移 10。采用可审计的简单加分，而不是推断用户真实所在地。字体和平台仍展示，但因为误判多而不计分。**分数不能与 IPPure 直接比较，30 不是通过线；低分不代表账号安全。**
+请求失败、被限流或被扩展拦截时显示“未知”，不会当作通过。
 
-中文是合法偏好，多个国家使用 UTC+8；改变语言和时区并不会修复 IP 信誉或网络路由。这个工具更适合检查配置是否按预期生效，而不是追求低分。
+## 候选服务与取舍
+
+| 服务 | 结果 | 取舍 |
+| --- | --- | --- |
+| [Upset EDNS](https://upset.dev/edns) | 免费、CORS 可用 | 单次只返回一个解析器；改用四个服务 16 次采样 |
+| [ipapi.is 匿名接口](https://ipapi.is/developers.html) | 匿名响应已不含机房 / VPN 字段 | 不再使用 |
+| [proxycheck.io](https://proxycheck.io/) | 有 IP 类型和代理判断 | 响应没有跨域许可，浏览器读不到 |
+| [ipapi.co](https://ipapi.co/free/) | 匿名请求经常 429 | 不作为默认 |
+| [IPinfo Lite](https://ipinfo.io/pricing) | 带 token 的版本更稳定 | 不在前端公开 token，使用匿名额度 |
+
+以上额度和条款会变化。页面不轮询、不重试已限流的服务，也不使用公共 CORS 代理（那会测到代理服务器自己的出口）。
 
 ## 纯前端做不到什么
 
-- 无外部服务时，浏览器不能凭空知道 NAT 后的公网 IP，也不能读取操作系统实际使用的递归 DNS 清单。
-- DNS 泄露测试需要独特域名和权威 DNS 观测。查询公共 DoH API 只是在测试那一个 DoH 服务，不等于检测系统 DNS。
-- 无法从网页读取 Clash 规则、整个系统路由、终端环境变量或所有应用代理链。
-- 不能获得 Claude 内部风控、账号状态、真实封禁概率或准确住宅信誉分数。
-- 不能把 CORS 失败与网络阻断可靠地区分，不能用一次成功代表长期稳定。
+- 读不到 Clash 规则、系统路由、终端环境变量或其他应用的代理链。
+- 读不到 Claude 的内部风控、账号状态或封禁概率。
+- 跨域失败与网络阻断无法可靠区分；一次成功不代表长期稳定。
+- 浏览器结果不能代表 Claude Code，终端需要单独检查。
 
-## 实测记录与复现
+## 复现
 
-当前版本的接口与浏览器验收结果见 [测试记录](validation.md)。实测只保留服务状态和结果类型，未把实际出口、解析器或原始响应写进仓库。
-
-复现时启动本地页面，点击网络检测；开发者工具中检查请求的 CORS、超时及状态。完整模式每次最多三组 IPv4、一次 IPv6 探测（每组最多主备各一次请求）、八个去重 IP 归属（每地址最多三个服务）、两次 trace、三次 DNS（含服务重定向）和一次 STUN 会话。只检查本地环境时应没有跨站请求。所有服务请求关闭凭据并尽可能省略 Referer。
-
-## GitHub Pages 部署边界
-
-[GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages) 只托管静态资源。本项目已使用 Actions 发布；主分支更新会自动构建部署，也支持手动触发。HTTPS 与 localhost 可用于浏览器检测；不要直接双击 file:// 文件运行。
-
-新增 Emoji 实际像素观测、三个 DNS 样本和更多环境检查，详见[功能对照](coverage.zh-CN.md)。它们不改变四项参考指数。
+`npm run dev` 后打开 http://127.0.0.1:4173 ，页面会自动开始检测。在开发者工具的网络面板可以看到上表中的每个请求；所有请求都关闭凭据、省略 Referer。实测记录见[测试记录](validation.md)。

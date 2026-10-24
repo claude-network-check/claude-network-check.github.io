@@ -1,28 +1,184 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="检查 Claude 访问出口、WebRTC 和 DNS 暴露、浏览器地区特征。先看结论，再按问题修复。"><meta name="referrer" content="no-referrer"><title>Claude 环境检测 · Network Check</title><link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./theme.css"><script type="module" src="./app.js"></script></head>
-<body data-phase="idle"><a class="skip" href="#main">跳到主要内容</a>
-<header class="top"><a class="brand" href="./"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg></span>Network Check</a><nav aria-label="主导航"><a href="./" aria-current="page">环境检测</a><a href="./guide.html">配置教程</a><a href="./research.html">检测方法</a></nav><a class="skill-link" href="./downloads/claude-network-setup.zip">下载 Skill <span aria-hidden="true">↗</span></a></header>
-<main id="main">
-<section class="masthead"><div><p class="eyebrow">NETWORK CHECK / CLAUDE</p><h1>Claude 环境检测<span class="title-dot">.</span></h1><p class="subtitle">免费检查 Claude 访问出口、DNS 与 WebRTC 暴露，核对浏览器的地区信号。</p></div><span class="scope-tag"><span></span> 22 项检查 · 本地处理</span></section>
-<section class="verdict" id="verdict" data-state="idle" aria-labelledby="verdict-title"><div class="verdict-main"><div class="verdict-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h4l3-7 3 14 3-7h3"/></svg></div><div class="verdict-copy"><p class="overline" id="verdict-label">开始之前，先检查访问环境</p><h2 id="verdict-title">确认你的 Claude 出口与隐私状态</h2><p id="verdict-description">一次检查网络出口、地址暴露和地区线索，给出需要优先处理的问题。</p></div><div class="actions"><button id="start" class="primary">开始全面检测 <span aria-hidden="true">↗</span></button><button id="local" class="secondary">仅检查浏览器</button><button id="cancel" class="secondary" hidden>停止检测</button></div></div><div class="verdict-foot"><p class="consent" id="consent">检测会连接第三方服务；WebRTC 可能使用非代理 UDP。<a href="#data-notice">数据说明</a></p><div class="scan-state" id="scan-state" hidden><span class="status-dot"></span><span id="progress" role="status" aria-live="polite">准备就绪</span><span id="completed-count">0 / 22</span></div><button id="export" class="text-button" hidden disabled>导出脱敏报告 ↓</button></div><div class="progress-track" aria-hidden="true"><div id="progress-fill"></div></div></section>
-<p id="coverage-note" class="coverage-note" hidden></p>
-<section class="exit-panel panel" aria-labelledby="exit-title"><div class="panel-heading"><h2 id="exit-title"><span class="section-index">01</span>Claude 访问出口</h2><button class="plain-link" data-reveal="egress" id="exit-consistency">等待出口对照 ↗</button></div><div class="exit-grid">
-<article class="endpoint" data-endpoint="claude-ai"><div class="endpoint-label"><span class="endpoint-dot"></span><h3>claude.ai</h3><span>应用</span><span class="badge" data-state="idle">待检测</span></div><button class="ip-address" data-reveal="claude-ai">等待检测</button><p class="endpoint-location">国家 / 地区 · 待查询</p><p class="endpoint-provider">运营商 / ASN · 待查询</p></article>
-<article class="endpoint" data-endpoint="claude-com"><div class="endpoint-label"><span class="endpoint-dot"></span><h3>claude.com</h3><span>官网</span><span class="badge" data-state="idle">待检测</span></div><button class="ip-address" data-reveal="claude-com">等待检测</button><p class="endpoint-location">国家 / 地区 · 待查询</p><p class="endpoint-provider">运营商 / ASN · 待查询</p></article>
-</div><div class="exit-baseline"><span>普通网页 IPv4 <button id="baseline-ip" data-reveal="ipv4">等待检测</button></span><span>IP 类型 / 信誉 <strong>未接入数据源</strong></span><button class="plain-link" data-reveal="stability" id="stability-value">响应耗时 —</button></div><p class="panel-caption">诊断端点的出口观测，不代表登录或对话可用；住宅属性不会根据运营商名称推断。</p></section>
-<div class="signal-grid">
-<section class="panel signal-panel" aria-labelledby="privacy-title"><div class="panel-heading"><h2 id="privacy-title"><span class="section-index">02</span>有没有地址暴露？</h2><span class="quiet">网络与隐私</span></div><div id="privacy-signals" class="signal-list"></div><p class="panel-caption">未采集到地址不等于没有泄露；DNS 地区差异需结合配置判断。</p></section>
-<section class="panel signal-panel" aria-labelledby="region-title"><div class="panel-heading"><h2 id="region-title"><span class="section-index">03</span>浏览器呈现什么地区？</h2><span class="quiet">本地特征</span></div><div id="region-signals" class="signal-list"></div><div class="regional-index"><div><span>中国大陆环境特征</span><strong id="score">—</strong><span>/ 100</span><span id="score-level">未检测</span></div><details class="method"><summary>评分依据</summary><div><div id="score-reasons"></div><p>时区标识 40、首选中文 30、Intl 中文地区 20、UTC+8 偏移 10，命中则累加。缺字段不评分；字体和 Emoji 不计分。中文和 UTC+8 被多个地区使用。</p><p>这是自定义参考指数，不是 Claude 的识别概率，也不包含网络风险。</p></div></details></div></section>
-</div>
-<section class="priorities" id="priorities" hidden aria-labelledby="priorities-title"><div class="section-heading"><div><p class="eyebrow">WHAT TO CHECK NEXT</p><h2 id="priorities-title">优先处理这些问题</h2></div><button class="plain-link" id="view-issues">查看所有待核对项 →</button></div><div id="recommendations"></div></section>
-<aside class="cli-note"><span class="cli-symbol" aria-hidden="true">&gt;_</span><div><h2>也在使用 Claude Code？</h2><p>浏览器结果不能代表终端。用 Skill 检查 CLI 的代理、环境变量与自定义端点。</p></div><a href="./downloads/claude-network-setup.zip">下载诊断 Skill ↗</a></aside>
-<details class="diagnostics" id="evidence"><summary class="evidence-toggle"><div><h2 id="diagnostics-title">全部检测证据 <span>22</span></h2><p>查看原始观测、数据来源与判断依据</p></div><span class="open-label">展开明细 ＋</span></summary><div class="evidence-content"><div class="section-heading"><p>10 项网络观测 · 12 项浏览器检查</p><label class="search"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg><input id="search" type="search" placeholder="搜索 IP、DNS、字体…" aria-label="查找检测项"></label></div>
-<div class="tabs" role="group" aria-label="筛选检测项目"><button data-filter="all" aria-pressed="true">全部 <span>22</span></button><button data-filter="network" aria-pressed="false">网络 <span>10</span></button><button data-filter="browser" aria-pressed="false">浏览器 <span>12</span></button><button data-filter="review" aria-pressed="false">需核对 <span id="filter-review-count">0</span></button><button data-filter="unknown" aria-pressed="false">未确认 <span id="filter-unknown-count">0</span></button><button data-filter="limited" aria-pressed="false">受限 <span id="filter-limited-count">0</span></button></div>
-<div class="result-groups" id="result-groups">
-<section class="result-group" data-group="network"><div class="group-heading"><div><span class="group-number">01</span><h3>网络路径与隐私</h3><span class="group-count">10 项</span></div><span class="group-description">出口、解析器与地址暴露</span></div><div class="check-list" id="network-list"></div></section>
-<section class="result-group" data-group="region"><div class="group-heading"><div><span class="group-number">02</span><h3>地区识别线索</h3><span class="group-count">6 项</span></div><span class="group-description">时区、语言、字体与 Emoji</span></div><div class="check-list" id="region-list"></div></section>
-<details class="result-group supplementary" data-group="device" id="supplementary"><summary class="group-heading"><div><span class="group-number">03</span><h3>一致性与设备信息</h3><span class="group-count">6 项</span></div><span class="group-description">展开补充检查 <span aria-hidden="true">＋</span></span></summary><div class="check-list" id="device-list"></div></details>
-</div><div id="empty-results" class="empty-results" hidden>没有匹配的检测项。试试其他关键词或筛选条件。</div></div></details>
-<section class="help-section" aria-labelledby="help-title"><div class="help-intro"><p class="eyebrow">UNDERSTAND YOUR RESULTS</p><h2 id="help-title">如何理解 Claude 环境检测？</h2><p>检查网络路径，再根据具体问题调整配置。</p></div><div class="help-content"><p>本工具提供 22 项网络与浏览器检查：对照 Claude 和普通网页的出口 IP，观察 DNS、ECS、WebRTC 与 IPv6，并读取时区、语言和设备线索。所有检测由你点击启动。</p><details><summary>这能测出 Claude 认为我是中国用户的概率吗？</summary><p>不能。页面的地区参考指数来自四项公开的本地信号，不是 Claude 内部模型，也不是封号概率。低分不能证明账号安全。<a href="./research.html">了解检测方法与评分边界</a>。</p></details><details><summary>DNS 泄露和 WebRTC 泄露有什么区别？</summary><p>DNS 检查观察域名解析请求由哪些递归解析器处理；WebRTC 检查浏览器的 ICE 候选地址是否与 HTTP 出口不同。地区不同或地址不同需要结合代理规则核对，不能单凭差异认定泄露。<a href="./guide.html#dns">检查 DNS 路径</a>，或<a href="./guide.html#browser">核对 WebRTC 策略</a>。</p></details><details><summary>为什么开了代理，仍有项目显示检测受限？</summary><p>IPv6-only 服务不可达、WebRTC 策略、UDP 路径和第三方接口限制都可能影响采集。未采集到地址不等于没有泄露。展开检测证据，查看具体来源与状态。<a href="./coverage.html">查看全部检测范围</a>。</p></details><details><summary>浏览器检测结果能代表 Claude Code 吗？</summary><p>不能。终端、编辑器和浏览器可能使用不同的代理设置。需要分别核对 TUN 接管、环境变量和自定义 API 端点。<a href="./guide.html#tun">阅读 TUN 与规则配置</a>，也可<a href="./downloads/claude-network-setup.zip">下载诊断 Skill</a>协助检查。</p></details></div></section>
-<details id="data-notice" class="privacy"><summary>关于数据与检测边界 <span aria-hidden="true">＋</span></summary><p>本页不保存结果、不生成唯一指纹、不接入统计脚本。本地检查不会发送跨站请求，不申请位置、摄像头或麦克风权限。</p><p>全面检测访问 ipify、ident.me、country.is、ipapi.is（匿名基础查询）、备用 ipwho.is、Claude trace、Upset EDNS 和 Cloudflare STUN。它们能看到各自连接的来源；IP 归属查询最多发送 8 个去重地址，每个地址最多查询 3 个服务；结果只在内存中缓存 5 分钟。检测只能代表当前浏览器和本次样本，不能读取整台电脑的路由。</p><p>参考指数不是 Claude 的识别概率，低分不等于网络安全或账号安全。免费服务失败时保留未确认状态。导出报告隐藏 IP，但仍有环境信息，分享前请审阅。</p><a href="./coverage.html">检测范围与 IPPure 对照 ↗</a> · <a href="./research.html">方法、接口与限制 ↗</a></details>
-</main><footer><span>Network Check <span class="footer-dot">/</span> 独立环境诊断工具</span><span class="footer-links"><a href="./guide.html">配置教程</a><a href="./research.html">检测方法</a><a href="./coverage.html">检测范围</a></span></footer><noscript>检测需要 JavaScript；配置教程和检测方法仍可阅读。</noscript></body></html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="检测 Claude 出口 IP 与地区、DNS 与 WebRTC 泄露、浏览器中文环境特征。">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light dark">
+<title>Claude 环境检测</title>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./base.css">
+<link rel="stylesheet" href="./check.css">
+<script src="./theme.js"></script>
+<script type="module" src="./app.js"></script>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true">
+  <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></symbol>
+  <symbol id="i-ok" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.4 8.2 8 9 4.6-.8 8-4 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M10.3 4.2 2.6 17.5A2 2 0 0 0 4.3 20.5h15.4a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0z"/><path d="M12 9.5v4M12 17h.01"/></symbol>
+  <symbol id="i-risk" viewBox="0 0 24 24"><path d="M8 2.5h8L21.5 8v8L16 21.5H8L2.5 16V8z"/><path d="m9 9 6 6M15 9l-6 6"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+  <symbol id="i-spin" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.7 3 2.7 15 0 18M12 3c-2.7 3-2.7 15 0 18"/></symbol>
+  <symbol id="i-dns" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></symbol>
+  <symbol id="i-rtc" viewBox="0 0 24 24"><path d="M5 12.5a9.9 9.9 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5h.01M2 9a14 14 0 0 1 20 0"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-lang" viewBox="0 0 24 24"><path d="M4 5h8M8 3v2M5.5 5c.8 3.5 3.2 6 6.5 7.5M10.5 5c-.8 3.5-3.3 6.3-6.5 8M13 21l4-10 4 10M14.5 17.5h5"/></symbol>
+  <symbol id="i-type" viewBox="0 0 24 24"><path d="M5 7V5h14v2M12 5v14M9 19h6"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 8h16M4 16h16"/><circle cx="9" cy="8" r="2.2"/><circle cx="15" cy="16" r="2.2"/></symbol>
+  <symbol id="i-offset" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4h4"/></symbol>
+  <symbol id="i-smile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5s1.4 2 3.5 2 3.5-2 3.5-2M9 9.5h.01M15 9.5h.01"/></symbol>
+  <symbol id="i-device" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 5.1A9.8 9.8 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-2.6 3.4M6.6 6.6C3.7 8.5 2 12 2 12s3.5 7 10 7c1.9 0 3.6-.6 5-1.5M9.9 9.9a3 3 0 0 0 4.2 4.2"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.8-4M4 4v4h4M4 13a8 8 0 0 0 14.8 4M20 20v-4h-4"/></symbol>
+  <symbol id="i-terminal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3M13 15h4"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+</svg>
+<a class="skip" href="#main">跳到主要内容</a>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="./"><span class="brand-mark"><svg><use href="#i-pulse"/></svg></span><span>Claude Network Check</span></a>
+    <nav class="site-nav" aria-label="主导航">
+      <a href="./" aria-current="page">环境检测</a>
+      <a href="./guide.html">配置教程</a>
+      <a href="./research.html">检测方法</a>
+    </nav>
+    <button class="icon-btn theme-toggle" type="button" aria-label="切换深浅色"><svg class="sun"><use href="#i-sun"/></svg><svg class="moon"><use href="#i-moon"/></svg></button>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+  <section class="cover" aria-labelledby="verdict-title">
+    <div class="cover-head">
+      <p class="eyebrow"><span class="live-dot"></span><span id="progress-text" role="status" aria-live="polite">正在检测</span></p>
+      <h1>Claude 访问环境检测</h1>
+      <p class="lede">看 Claude 把你认作哪里的用户：出口 IP 与地区、DNS 和 WebRTC 是否泄露、浏览器有多少中文环境特征。</p>
+    </div>
+    <div class="report" id="summary" data-level="running">
+      <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+      <div class="report-main">
+        <div class="verdict">
+          <span class="verdict-badge" id="verdict-badge"><svg><use href="#i-spin"/></svg><span>检测中</span></span>
+          <h2 id="verdict-title">正在检测…</h2>
+          <p id="verdict-text">本地信号已就绪，网络检测仍在进行。</p>
+          <div class="actions">
+            <button id="rerun" class="btn btn-primary" type="button"><svg><use href="#i-refresh"/></svg>重新检测</button>
+            <button id="mask" class="btn" type="button" aria-pressed="false"><svg><use href="#i-eye-off"/></svg><span>隐藏 IP</span></button>
+            <button id="copy" class="btn" type="button" disabled><svg><use href="#i-copy"/></svg><span>复制报告</span></button>
+          </div>
+        </div>
+        <ul class="checklist">
+          <li><a class="tile" href="#exit" id="tile-exit" data-state="pending"><span class="tile-icon"><svg><use href="#i-globe"/></svg></span><span class="tile-text"><span class="tile-label">Claude 出口</span><strong class="tile-value">检测中</strong></span><span class="tile-sub">读取 trace</span></a></li>
+          <li><a class="tile" href="#dns" id="tile-dns" data-state="pending"><span class="tile-icon"><svg><use href="#i-dns"/></svg></span><span class="tile-text"><span class="tile-label">DNS 泄露</span><strong class="tile-value">检测中</strong></span><span class="tile-sub">16 次查询</span></a></li>
+          <li><a class="tile" href="#webrtc" id="tile-rtc" data-state="pending"><span class="tile-icon"><svg><use href="#i-rtc"/></svg></span><span class="tile-text"><span class="tile-label">WebRTC 泄露</span><strong class="tile-value">检测中</strong></span><span class="tile-sub">5 个 STUN</span></a></li>
+          <li><a class="tile" href="#env" id="tile-env" data-state="pending"><span class="tile-icon"><svg><use href="#i-user"/></svg></span><span class="tile-text"><span class="tile-label">中文环境特征</span><strong class="tile-value">—</strong></span><span class="tile-sub">0–100 分</span></a></li>
+        </ul>
+      </div>
+      <ol class="findings" id="findings" hidden></ol>
+    </div>
+  </section>
+
+  <section class="section" id="exit" aria-labelledby="exit-title">
+    <header class="section-head">
+      <span class="section-no">01</span>
+      <div class="section-title"><h2 id="exit-title">Claude 出口</h2><p>Claude 前端的 Cloudflare 节点看到的地址与地区</p></div>
+      <span class="pill" id="exit-pill" data-state="pending">检测中</span>
+    </header>
+    <div class="panel endpoints">
+      <article class="endpoint" id="ep-claude.ai" data-state="pending"></article>
+      <article class="endpoint" id="ep-claude.com" data-state="pending"></article>
+    </div>
+    <dl class="panel facts" id="exit-facts"></dl>
+  </section>
+
+  <div class="split">
+    <section class="section" id="dns" aria-labelledby="dns-title">
+      <header class="section-head">
+        <span class="section-no">02</span>
+        <div class="section-title"><h2 id="dns-title">DNS 泄露</h2><p>你的系统把域名交给谁解析</p></div>
+        <span class="pill" id="dns-pill" data-state="pending">检测中</span>
+      </header>
+      <div class="panel">
+        <ul class="rows" id="dns-list"></ul>
+        <button class="more" id="dns-more" type="button" hidden></button>
+      </div>
+      <p class="note" id="dns-note">每次请求使用随机子域名，由 Surfshark、Fastly、BrowserLeaks 的权威 DNS 记录是哪个解析器来查询。</p>
+    </section>
+    <section class="section" id="webrtc" aria-labelledby="rtc-title">
+      <header class="section-head">
+        <span class="section-no">03</span>
+        <div class="section-title"><h2 id="rtc-title">WebRTC 泄露</h2><p>浏览器的 UDP 是否绕过了代理</p></div>
+        <span class="pill" id="rtc-pill" data-state="pending">检测中</span>
+      </header>
+      <div class="panel"><ul class="rows" id="rtc-list"></ul></div>
+      <p class="note">同时连接 B 站、小米、芒果 TV 与 Cloudflare、Google 的 STUN 服务器。国内域名直连时，真实线路会在这里出现。</p>
+    </section>
+  </div>
+
+  <section class="section" id="env" aria-labelledby="env-title">
+    <header class="section-head">
+      <span class="section-no">04</span>
+      <div class="section-title"><h2 id="env-title">你是「Claude 中国用户」吗？</h2><p>六项浏览器区域信号加权得分，算法与 IPPure 一致</p></div>
+      <span class="pill" id="env-pill" data-state="pending">计算中</span>
+    </header>
+    <div class="panel env-body">
+      <div class="gauge-block">
+        <div class="gauge" id="gauge" data-band="low">
+          <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="gauge-track" cx="60" cy="60" r="52"/><circle class="gauge-fill" id="gauge-fill" cx="60" cy="60" r="52"/></svg>
+          <div class="gauge-value"><strong id="score">—</strong><span>/ 100</span></div>
+        </div>
+        <p class="gauge-band" id="score-band">—</p>
+        <div class="hits" id="hits"></div>
+      </div>
+      <ol class="signals" id="signals"></ol>
+    </div>
+    <p class="note">信号得分 ≥ 0.25 计为命中；0–30 低、31–60 中、61–100 高。只有系统时区与 Claude Code 公开逆向分析中读取的字段一一对应，其余五项是相关的中文环境特征，分数是估计而不是 Claude 的判定。</p>
+  </section>
+
+  <section class="section" id="device" aria-labelledby="device-title">
+    <header class="section-head">
+      <span class="section-no">05</span>
+      <div class="section-title"><h2 id="device-title">一致性与设备</h2><p>浏览器信号与出口地区是否对得上</p></div>
+    </header>
+    <dl class="panel facts facts-wide" id="device-facts"></dl>
+  </section>
+
+  <aside class="cli">
+    <span class="cli-icon"><svg><use href="#i-terminal"/></svg></span>
+    <div><h2>也在用 Claude Code？</h2><p>终端不一定走浏览器的代理。下载诊断 Skill，让 Agent 检查 TUN、环境变量、时区和自定义端点。</p></div>
+    <a class="btn" href="./downloads/claude-network-setup.zip">下载 Skill<svg><use href="#i-arrow"/></svg></a>
+  </aside>
+
+  <section class="faq" aria-labelledby="faq-title">
+    <h2 id="faq-title">常见问题</h2>
+    <div class="faq-list">
+      <details><summary>为什么和其他检测站的结果不一样？</summary><p>DNS 和 WebRTC 每次采样的解析器、STUN 服务器不同，出口 IP 的归属数据库也不同。本页的中文环境评分与 <a href="https://ippure.com/claude">IPPure</a> 使用相同的权重和分段，同一浏览器下分数应当一致；出口地区优先采用 Claude 前端 Cloudflare 自己返回的国家代码，而不是第三方 IP 库。</p></details>
+      <details><summary>DNS 泄露和 WebRTC 泄露有什么区别？</summary><p>DNS 泄露是系统把域名交给国内解析器，访问记录被看到；WebRTC 泄露是浏览器通过 UDP 绕过代理，直接暴露真实 IP。前者用代理客户端的 DNS 接管解决，后者用 TUN 模式或浏览器的 WebRTC 策略解决。见<a href="./guide.html#dns">配置教程</a>。</p></details>
+      <details><summary>中文环境分数低就代表账号安全吗？</summary><p>不代表。分数只反映浏览器能读到的区域信号。IP 信誉、支付方式、使用行为同样会影响风控，这些网页无法检测。</p></details>
+      <details><summary>浏览器结果能代表 Claude Code 吗？</summary><p>不能。终端、编辑器和浏览器可能走不同的代理。终端请确认 TUN 已接管或环境变量已设置，并检查系统时区。可用<a href="./downloads/claude-network-setup.zip">诊断 Skill</a> 协助核对。</p></details>
+    </div>
+  </section>
+
+  <section class="notice" id="data-notice" aria-labelledby="notice-title">
+    <h2 id="notice-title">数据与隐私</h2>
+    <p>打开页面即开始检测。浏览器会直接连接：claude.ai 与 claude.com 的 trace 端点、icanhazip / ipify / ident.me（出口 IP）、ipinfo.io / ipwho.is / country.is（IP 归属）、ipquery.io（IP 类型）、Surfshark / Fastly / BrowserLeaks（DNS 泄露）以及 5 个公共 STUN 服务器。这些服务能看到你的出口 IP。</p>
+    <p>本页没有后端、没有统计脚本，检测结果只在当前页面内存中，复制的报告默认隐藏 IP。免费服务可能限流或失败，失败项显示为「未知」，不会当作通过。</p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <span>Claude Network Check · 独立开源项目，与 Anthropic 无关</span>
+    <span class="footer-links"><a href="./guide.html">配置教程</a><a href="./research.html">检测方法</a><a href="./coverage.html">检测范围</a></span>
+  </div>
+</footer>
+<noscript><p class="wrap">检测需要 JavaScript；配置教程和检测方法仍可阅读。</p></noscript>
+</body>
+</html>
